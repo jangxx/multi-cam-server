@@ -1,9 +1,11 @@
 # multi-cam-server
 Very basic MJPEG streaming server which can serve multiple cameras and also only accesses them if the stream is open.
 
-## Usage
+## Usage & Installation
 
 ```bash
+sudo apt install libv4l-dev
+
 npx multi-cam-server -c /dev/video0 -r 1920x1080
 ```
 
