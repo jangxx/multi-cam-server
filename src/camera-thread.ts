@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { Camera } from "v4l2-camera";
+import { Camera } from "v4l2-camera-ts";
 
 // a "thread", i.e. a detached async loop
 export class CameraThread extends EventEmitter {
@@ -27,6 +27,13 @@ export class CameraThread extends EventEmitter {
 
 	stop() {
 		this._stopSignal = true;
+	}
+
+	stopAndWait() {
+		return new Promise<void>(resolve => {
+			this.once("stopped", resolve);
+			this.stop();
+		});
 	}
 
 	private async run() {

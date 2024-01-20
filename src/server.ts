@@ -5,7 +5,7 @@ import { CameraManager } from "./camera-manager";
 export function startServer(address: string, port: number, manager: CameraManager) {
 	const app = express();
 
-	app.get("/cam/:name/format", (req, res) => {
+	app.get("/cam/:name", (req, res) => {
 		const name = req.params.name;
 
 		try {
@@ -63,6 +63,10 @@ export function startServer(address: string, port: number, manager: CameraManage
 				res.status(500).send((e as Error).stack);
 			}
 		}
+	});
+
+	app.get("/cams", (req, res) => {
+		res.json(manager.listCameras());
 	});
 
 	app.listen(port, address, () => {

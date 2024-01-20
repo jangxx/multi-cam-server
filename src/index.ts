@@ -5,8 +5,8 @@ import { CameraManager } from "./camera-manager";
 
 program
 	.version(packageJson.version)
-	.option("-p, --port <port>", "Port to run the server on", "8080")
-	.option("-a, --address <address>", "Address to run the server on", "0.0.0.0")
+	.option("-p, --port [port]", "Port to run bind server to", "8080")
+	.option("-a, --address [address]", "Address to bind the server to", "0.0.0.0")
 	.requiredOption("-c, --camera <camera...>", "Paths to the camera to add to the server. You can prepend an alternative name with a colon (e.g. 'webcam:/dev/video0')")
 	.requiredOption("-r, --resolution <resolution...>", "Resolution to use for the camera(s). Either a single value (e.g. '640x480') for all cameras or one value per camera prefixed with the name (e.g. 'webcam:640x480')");
 

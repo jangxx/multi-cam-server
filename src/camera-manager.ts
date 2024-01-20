@@ -1,15 +1,41 @@
 import fsp from "fs/promises";
 import path from "path";
-import { Camera } from "v4l2-camera";
+import { Camera } from "v4l2-camera-ts";
 
 import { CameraThread } from "./camera-thread";
 import { InternalError, NotFoundError } from "./exceptions";
 
+interface CameraObject {
+	camera: Camera;
+	thread: CameraThread;
+	meta: {
+		path: string;
+	};
+}
+
 export class CameraManager {
-	private _cameras: Record<string, Camera> = {};
-	private _cameraThreads: Record<string, CameraThread> = {};
+	private _cameras: Record<string, CameraObject> = {};
 
 	constructor() {
+	}
+
+	async _closeAll() {
+		for (const name in this._cameras) {
+			await this._cameras[name].thread.stopAndWait();
+
+			this._cameras[name].camera.close();
+
+			delete this._cameras[name];
+		}
+	}
+
+	listCameras() {
+		return Object.entries(this._cameras).map(([name, { meta }]) => ({
+			name,
+			path: meta.path,
+			formatUrl: `/cam/${name}`,
+			streamUrl: `/cam/${name}/stream`,
+		}));
 	}
 
 	openCamera(cameraPath: string, name?: string) {
@@ -22,16 +48,22 @@ export class CameraManager {
 		const camera = new Camera();
 		camera.open(cameraPath);
 
-		this._cameras[name] = camera;
-		this._cameraThreads[name] = new CameraThread(camera);
+		const cameraObj = {
+			camera,
+			thread: new CameraThread(camera),
+			meta: {
+				path: cameraPath,
+			},
+		};
 
-		this._cameraThreads[name].on("error", (err) => {
-			console.log(`Camera ${name} encountered an error:`, err);
+		this._cameras[name] = cameraObj;
 
-			camera.close();
+		this._cameras[name].thread.on("error", (err) => {
+			console.log(`Camera ${name} encountered an error:`, err.message);
 
-			delete this._cameras[name!];
-			delete this._cameraThreads[name!];
+			this._closeAll().then(() => {
+				process.exit(1);
+			});
 		});
 
 		return { name };
@@ -44,7 +76,7 @@ export class CameraManager {
 
 		console.log(`Setting camera ${name} resolution to ${width}x${height}`)
 
-		const camera = this._cameras[name];
+		const { camera } = this._cameras[name];
 
 		camera.setFormat({
 			width,
@@ -67,15 +99,15 @@ export class CameraManager {
 			throw new NotFoundError("camera");
 		}
 
-		return this._cameras[name].queryFormat();
+		return this._cameras[name].camera.queryFormat();
 	}
 
 	aquireCameraThread(name: string): CameraThread {
-		if (!this._cameraThreads[name]) {
+		if (!this._cameras[name]) {
 			throw new NotFoundError("camera");
 		}
 
-		const thread = this._cameraThreads[name];
+		const { thread } = this._cameras[name];
 
 		if (!thread.running) {
 			thread.start();
@@ -85,11 +117,11 @@ export class CameraManager {
 	}
 
 	releaseCameraThread(name: string) {
-		if (!this._cameraThreads[name]) {
+		if (!this._cameras[name]) {
 			throw new NotFoundError("camera");
 		}
 
-		const thread = this._cameraThreads[name];
+		const { thread } = this._cameras[name];
 
 		if (thread.running && thread.listenerCount("frame") === 0) {
 			thread.stop();
