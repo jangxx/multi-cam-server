@@ -43,7 +43,7 @@ export class CameraManager {
 			name = path.basename(cameraPath);
 		}
 
-		console.log(`Opening camera ${name} (${cameraPath})`);
+		console.log(`Opening camera "${name}" (${cameraPath})`);
 
 		const camera = new Camera();
 		camera.open(cameraPath);
@@ -59,7 +59,7 @@ export class CameraManager {
 		this._cameras[name] = cameraObj;
 
 		this._cameras[name].thread.on("error", (err) => {
-			console.log(`Camera ${name} encountered an error:`, err.message);
+			console.log(`Camera "${name}" encountered an error:`, err.message);
 
 			this._closeAll().then(() => {
 				process.exit(1);
@@ -74,7 +74,7 @@ export class CameraManager {
 			throw new NotFoundError("camera");
 		}
 
-		console.log(`Setting camera ${name} resolution to ${width}x${height}`)
+		console.log(`Setting camera "${name}" resolution to ${width}x${height}`)
 
 		const { camera } = this._cameras[name];
 

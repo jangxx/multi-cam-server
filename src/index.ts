@@ -35,7 +35,8 @@ for (const resolutionDef of args.resolution) {
 				height: parseInt(matches2[2]),
 			};
 		} else {
-			throw new Error(`Invalid resolution: ${resolutionDef}`);
+			console.error(`Invalid resolution: "${resolutionDef}"`);
+			process.exit(1);
 		}
 	}
 }
@@ -54,7 +55,8 @@ for (const cameraDef of args.camera) {
 	const resolution = resolutions[result.name] || resolutions["*"];
 
 	if (!resolution) {
-		throw new Error(`No resolution specified for camera ${result.name}`);
+		console.error(`No resolution specified for camera "${result.name}"`);
+		process.exit(1);
 	}
 
 	cameraManager.setCameraParameters(result.name, resolution.width, resolution.height);
