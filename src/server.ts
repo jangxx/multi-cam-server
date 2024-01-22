@@ -2,6 +2,12 @@ import express from "express";
 
 import { CameraManager } from "./camera-manager";
 
+function run(fn: (req: express.Request, res: express.Response) => Promise<void>) {
+	return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+		fn(req, res).catch(next);
+	};
+}
+
 export function startServer(address: string, port: number, manager: CameraManager) {
 	const app = express();
 
@@ -64,6 +70,33 @@ export function startServer(address: string, port: number, manager: CameraManage
 			}
 		}
 	});
+
+	app.get("/cam/:name/snapshot", run(async (req, res) => {
+		const name = req.params.name;
+		const warmupFrames = parseInt(req.query?.["warmup-frames"] as string) || 0;
+
+		try {
+			const thread = manager.aquireCameraThread(name);
+
+			res.setHeader("Content-Type", "image/jpeg");
+
+			if (thread.frames == 0) {
+				for (let i = 0; i < warmupFrames; i++) {
+					await thread.getNextFrame();
+				}
+			}
+
+			res.end(await thread.getNextFrame());
+
+			manager.releaseCameraThread(name);
+		} catch(e: any) {
+			if (e.isCustomError) {
+				res.status(e.httpCode).json({ error: e.message });
+			} else {
+				res.status(500).send((e as Error).stack);
+			}
+		}
+	}));
 
 	app.get("/cams", (req, res) => {
 		res.json(manager.listCameras());

@@ -19,11 +19,12 @@ I had been using mjpeg-streamer for many years but started to dislike it after I
 This server can not only serve more than one webcam from the same server, it will also only read data from the webcam if the stream is open.
 Not only does this save power, it also allows you to use the webcam LED to see if anyone is watching the stream instead of it always being on.
 
-## Routes
+## API Endpoints
 
 - `<host>`/cams: Returns a list of all opened cameras and their respective URLs.
 - `<host>`/cam/`{name}`: Returns format information about the webcam `{name}`.
 - `<host>`/cam/`{name}`/stream: Returns an MJPEG stream of webcam frames.
+- `<host>`/cam/`{name}`/snapshot: Returns a single JPEG image from the camera. An optional `warmup-frames` parameter can be supplied, to make the camera run for a few frames before responding.
 
 ## Parameters
 
@@ -36,6 +37,6 @@ Options:
                                     You can prepend an alternative name with a colon (e.g. 'webcam:/dev/video0')
   -r, --resolution <resolution...>  Resolution to use for the camera(s).
                                     Either a single value (e.g. '640x480') for all cameras
-									or one value per camera prefixed with the name (e.g. 'webcam:640x480')
+                                    or one value per camera prefixed with the name (e.g. 'webcam:640x480')
   -h, --help                        display help for command
 ```

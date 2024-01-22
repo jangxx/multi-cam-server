@@ -5,6 +5,7 @@ import { Camera } from "v4l2-camera-ts";
 export class CameraThread extends EventEmitter {
 	private _stopSignal = false;
 	private _running = false;
+	private _frames = 0;
 
 	constructor(
 		private readonly _camera: Camera,
@@ -16,9 +17,14 @@ export class CameraThread extends EventEmitter {
 		return this._running;
 	}
 
+	get frames() {
+		return this._frames;
+	}
+
 	start() {
 		this._camera.start();
 		this._stopSignal = false;
+		this._frames = 0;
 
 		setTimeout(() => this.run(), 0); // "detach"
 
@@ -44,6 +50,7 @@ export class CameraThread extends EventEmitter {
 				if (this._stopSignal) break; // can change in the meantime
 
 				this.emit("frame", frame);
+				this._frames++;
 			}
 
 			this._camera.stop();
@@ -55,25 +62,24 @@ export class CameraThread extends EventEmitter {
 		this._running = false;
 	}
 
-	// private run() {
-	// 	let promise = Promise.resolve();
+	getNextFrame() {
+		if (!this._running) {
+			throw new Error("Camera thread is not running");
+		}
 
-	// 	const loop = () => {
-	// 		promise = promise.then(() => {
-	// 			if (this._stopSignal) return;
+		return new Promise((resolve, reject) => {
+			const errorFn = (err: Error) => {
+				this.off("frame", resolve);
+				reject(err);
+			};
 
-	// 			return this._camera.getNextFrame();
-	// 		}).then(frame => {
-	// 			if (this._stopSignal) return;
+			const frameFn = (frame: Buffer) => {
+				this.off("error", errorFn);
+				resolve(frame);
+			};
 
-	// 			this.emit("frame", frame);
-
-	// 			loop();
-	// 		}, e => {
-	// 			console.log("caught", e);
-	// 		});
-	// 	};
-
-	// 	loop();
-	// }
+			this.once("frame", frameFn);
+			this.once("error", errorFn);
+		});
+	}
 }
