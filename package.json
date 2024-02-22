@@ -1,6 +1,6 @@
 {
   "name": "multi-cam-server",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "MJPEG streaming server which can serve multiple cameras (V4L2) and also only accesses them if the stream is open.",
   "main": "./dist/index.js",
   "bin": {

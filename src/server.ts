@@ -90,7 +90,7 @@ export function startServer(address: string, port: number, manager: CameraManage
 
 			const frame = await thread.getNextFrame();
 
-			sharp(frame).toFormat("jpeg", { quality }).pipe(res);
+			sharp(frame, { failOn: "none" }).toFormat("jpeg", { quality }).pipe(res);
 
 			manager.releaseCameraThread(name);
 		} catch(e: any) {
