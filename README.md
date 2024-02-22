@@ -24,7 +24,7 @@ Not only does this save power, it also allows you to use the webcam LED to see i
 - `<host>`/cams: Returns a list of all opened cameras and their respective URLs.
 - `<host>`/cam/`{name}`: Returns format information about the webcam `{name}`.
 - `<host>`/cam/`{name}`/stream: Returns an MJPEG stream of webcam frames.
-- `<host>`/cam/`{name}`/snapshot: Returns a single JPEG image from the camera. An optional `warmup-frames` parameter can be supplied, to make the camera run for a few frames before responding.
+- `<host>`/cam/`{name}`/snapshot: Returns a single JPEG image from the camera. An optional `warmup-frames` parameter can be supplied, to make the camera run for a few frames before responding. An optional `quality` (0-100) parameter can be supplied to control the JPEG quality (default: 80).
 
 ## Parameters
 

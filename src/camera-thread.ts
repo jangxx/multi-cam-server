@@ -62,7 +62,7 @@ export class CameraThread extends EventEmitter {
 		this._running = false;
 	}
 
-	getNextFrame() {
+	getNextFrame(): Promise<Buffer> {
 		if (!this._running) {
 			throw new Error("Camera thread is not running");
 		}

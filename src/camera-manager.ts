@@ -35,6 +35,7 @@ export class CameraManager {
 			path: meta.path,
 			formatUrl: `/cam/${name}`,
 			streamUrl: `/cam/${name}/stream`,
+			snapshotUrl: `/cam/${name}/snapshot`,
 		}));
 	}
 

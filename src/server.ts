@@ -1,4 +1,5 @@
 import express from "express";
+import sharp from "sharp";
 
 import { CameraManager } from "./camera-manager";
 
@@ -74,6 +75,7 @@ export function startServer(address: string, port: number, manager: CameraManage
 	app.get("/cam/:name/snapshot", run(async (req, res) => {
 		const name = req.params.name;
 		const warmupFrames = parseInt(req.query?.["warmup-frames"] as string) || 0;
+		const quality = parseInt(req.query?.["quality"] as string) || 80;
 
 		try {
 			const thread = manager.aquireCameraThread(name);
@@ -86,7 +88,9 @@ export function startServer(address: string, port: number, manager: CameraManage
 				}
 			}
 
-			res.end(await thread.getNextFrame());
+			const frame = await thread.getNextFrame();
+
+			sharp(frame).toFormat("jpeg", { quality }).pipe(res);
 
 			manager.releaseCameraThread(name);
 		} catch(e: any) {
